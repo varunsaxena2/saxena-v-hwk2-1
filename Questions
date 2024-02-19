@@ -1,0 +1,26 @@
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(tidyverse, ggplot2, dplyr, lubridate, stringr, readxl, data.table, gdata)
+
+data <- readRDS("data/output/HCRIS_Data_v1996.rds")
+#print(colnames(data))
+
+# Read in data into a sorted table
+table <- data %>%
+  group_by(provider_number, year) %>%
+  summarise(num_reports = n())
+
+# Filter groups where the count of reports is greater than 1
+multiple_reports <- table %>%
+  filter(num_reports > 1)
+
+# Count the number of unique hospitals in those groups
+num_hospitals_multiple_reports <- multiple_reports %>%
+  group_by(year) %>%
+  summarise(num_hospitals = n_distinct(provider_number))
+
+# Print the number of hospitals with multiple reports in each year
+print(num_hospitals_multiple_reports)
+
+ggplot(num_hospitals_multiple_reports, aes(x = year, y = num_hospitals))
+
+save.image("analysis/Hwk2_workspace.Rdata")
